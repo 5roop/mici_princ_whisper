@@ -17,6 +17,8 @@ dependencies:
   - libxcrypt=4.4.36=hd590300_1
   - libzlib=1.2.13=hd590300_5
   - ncurses=6.4=h59595ed_2
+  - ocl-icd=2.3.2=hd590300_0
+  - ocl-icd-system=1.0.0=1
   - openssl=3.2.1=hd590300_0
   - pip=24.0=pyhd8ed1ab_0
   - python=3.11.8=hab00c5b_0_cpython
