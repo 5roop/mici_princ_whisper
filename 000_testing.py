@@ -21,16 +21,19 @@ ds["test"] = Dataset.from_pandas(test_df)
 ds["train"] = Dataset.from_pandas(train_df)
 
 
-feature_extractor = WhisperFeatureExtractor.from_pretrained("openai/whisper-large-v3")
+feature_extractor = WhisperFeatureExtractor.from_pretrained(
+    "openai/whisper-large-v3",
+    language="croatian",
+)
 
 tokenizer = WhisperTokenizer.from_pretrained(
-    "openai/whisper-small", language="Croatian", task="transcribe"
+    "openai/whisper-small", language="croatian", task="transcribe"
 )
 
 from transformers import WhisperProcessor
 
 processor = WhisperProcessor.from_pretrained(
-    "openai/whisper-large-v3", language="Croatian", task="transcribe"
+    "openai/whisper-large-v3", language="croatian", task="transcribe"
 )
 
 input_str = ds["test"][0]["text"]
@@ -140,14 +143,15 @@ from transformers import WhisperForConditionalGeneration
 model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-large-v3")
 model.config.forced_decoder_ids = None
 model.config.suppress_tokens = []
+model.generation_config.language = "croatian"
 
 
 from transformers import Seq2SeqTrainingArguments
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./output",  # change to a repo name of your choice
-    per_device_train_batch_size=8,
-    gradient_accumulation_steps=2,  # increase by 2x for every 2x decrease in batch size
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,  # increase by 2x for every 2x decrease in batch size
     learning_rate=1e-5,
     warmup_steps=100,
     max_steps=3090,
@@ -161,7 +165,7 @@ training_args = Seq2SeqTrainingArguments(
     eval_steps=309,
     logging_steps=25,
     report_to=["tensorboard"],
-    load_best_model_at_end=True,
+    load_best_model_at_end=False,
     metric_for_best_model="wer",
     greater_is_better=False,
     push_to_hub=False,
