@@ -70,6 +70,7 @@ nvidia-nvtx-cu12==12.1.105
 orjson==3.9.15
 packaging==24.0
 pandas==2.2.1
+pathlib==1.0.1
 pillow==10.2.0
 platformdirs==4.2.0
 pooch==1.8.1

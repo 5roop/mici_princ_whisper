@@ -1,10 +1,24 @@
 from transformers import WhisperFeatureExtractor
 from transformers import WhisperTokenizer
-from datasets import load_dataset, DatasetDict
+from datasets import load_dataset, DatasetDict, Dataset
+import pandas as pd
+from pathlib import Path
 
+test_path = Path("data/test")
+test_jsons = test_path.glob("*.asr.json")
+test_df = pd.concat([pd.read_json(i) for i in test_jsons])
+test_df["audio"] = test_df.audio.apply(lambda s: str(test_path / s))
 
+train_path = Path("data/train")
+train_jsons = train_path.glob("*.asr.json")
+train_df = pd.concat([pd.read_json(i) for i in train_jsons])
+train_df["audio"] = train_df.audio.apply(lambda s: str(train_path / s))
+
+assert train_df.audio.apply(lambda s: Path(s).exists()).all()
+assert test_df.audio.apply(lambda s: Path(s).exists()).all()
 ds = DatasetDict()
-ds["test"] = load_dataset("5roop/juzne_vesti", split="test")
+ds["test"] = Dataset.from_pandas(test_df)
+ds["train"] = Dataset.from_pandas(train_df)
 
 
 feature_extractor = WhisperFeatureExtractor.from_pretrained("openai/whisper-large-v3")
@@ -19,15 +33,15 @@ processor = WhisperProcessor.from_pretrained(
     "openai/whisper-large-v3", language="Croatian", task="transcribe"
 )
 
-# input_str = ds["test"][0]["transcript"]
-# labels = tokenizer(input_str).input_ids
-# decoded_with_special = tokenizer.decode(labels, skip_special_tokens=False)
-# decoded_str = tokenizer.decode(labels, skip_special_tokens=True)
+input_str = ds["test"][0]["text"]
+labels = tokenizer(input_str).input_ids
+decoded_with_special = tokenizer.decode(labels, skip_special_tokens=False)
+decoded_str = tokenizer.decode(labels, skip_special_tokens=True)
 
-# print(f"Input:                 {input_str}")
-# print(f"Decoded w/ special:    {decoded_with_special}")
-# print(f"Decoded w/out special: {decoded_str}")
-# print(f"Are equal:             {input_str == decoded_str}")
+print(f"Input:                 {input_str}")
+print(f"Decoded w/ special:    {decoded_with_special}")
+print(f"Decoded w/out special: {decoded_str}")
+print(f"Are equal:             {input_str == decoded_str}")
 from datasets import Audio
 
 ds = ds.cast_column("audio", Audio(sampling_rate=16000, mono=True))
@@ -45,11 +59,15 @@ def prepare_dataset(batch):
     ).input_features[0]
 
     # encode target text to label ids
-    batch["labels"] = tokenizer(batch["transcript"]).input_ids
+    batch["labels"] = tokenizer(batch["text"]).input_ids
     return batch
 
 
-ds = ds.map(prepare_dataset, remove_columns=ds.column_names["test"], num_proc=4)
+ds = ds.map(
+    prepare_dataset,
+    # remove_columns=ds.column_names["test"],
+    num_proc=4,
+)
 
 import torch
 
@@ -132,15 +150,15 @@ training_args = Seq2SeqTrainingArguments(
     gradient_accumulation_steps=2,  # increase by 2x for every 2x decrease in batch size
     learning_rate=1e-5,
     warmup_steps=100,
-    max_steps=400,
+    max_steps=3090,
     gradient_checkpointing=True,
     fp16=True,
     evaluation_strategy="steps",
     per_device_eval_batch_size=8,
     predict_with_generate=True,
     generation_max_length=225,
-    save_steps=100,
-    eval_steps=100,
+    save_steps=309,
+    eval_steps=309,
     logging_steps=25,
     report_to=["tensorboard"],
     load_best_model_at_end=True,
@@ -154,7 +172,7 @@ from transformers import Seq2SeqTrainer
 trainer = Seq2SeqTrainer(
     args=training_args,
     model=model,
-    train_dataset=ds["test"],
+    train_dataset=ds["train"],
     eval_dataset=ds["test"],
     data_collator=data_collator,
     compute_metrics=compute_metrics,

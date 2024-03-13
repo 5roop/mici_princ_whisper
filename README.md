@@ -13,4 +13,6 @@ srun: error: Unable to confirm allocation for job 911: Invalid job id specified
 srun: Check SLURM_JOB_ID environment variable. Expired or invalid job 911
 ```
 
-Maybe it's due to the network problems JSI has been experiencing today.
+~Maybe it's due to the network problems JSI has been experiencing today.~
+
+Barbara fixed the problem after an email report.
