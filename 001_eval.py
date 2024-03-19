@@ -2,11 +2,13 @@ from datasets import load_dataset, DatasetDict, Dataset, Audio
 from transformers.pipelines.pt_utils import KeyDataset
 import pandas as pd
 from pathlib import Path
+from os import environ
 
 test_path = Path("data/test")
 test_jsons = test_path.glob("*.asr.json")
 test_df = pd.concat([pd.read_json(i) for i in test_jsons])
 test_df["audio"] = test_df.audio.apply(lambda s: str(test_path / s))
+test_df["text"] = test_df.normalized_text
 ds = Dataset.from_pandas(test_df)
 ds = ds.cast_column("audio", Audio(sampling_rate=16000, mono=True))
 
@@ -15,6 +17,7 @@ checkpoints = list(Path("output").glob("checkpoint*")) + ["openai/whisper-large-
 
 
 def get_transcripts(model_id):
+    print(model_id)
     import torch
     from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
     from pathlib import Path
@@ -62,8 +65,7 @@ def get_transcripts(model_id):
 from tqdm import tqdm
 
 for checkpoint in tqdm(checkpoints):
+    print(f"Evaluating {checkpoint}...")
     transcription = get_transcripts(checkpoint)
     test_df[str(checkpoint).replace("/", "_")] = transcription
-    print(test_df.shape)
-    print("")
 test_df.to_csv("transcriptions.csv", index=False)

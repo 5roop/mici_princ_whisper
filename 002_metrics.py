@@ -3,21 +3,23 @@ import evaluate
 
 df = pd.read_csv("transcriptions.csv")
 print(df.shape)
+df["text"] = df.normalized_text
+del df["normalized_text"]
+
 print(sorted(set(" ".join(df.text.tolist()))))
-punctuation = ["\n", "!", ",", ".", ":", "?", "–", "“", "„", "•", "…"]
+punctuation = ["!", ",", ".", ":", "?", "–", "“", "„", "•", "…"]
 
 
 def normalize(s: str) -> str:
-    return "".join([i for i in s if i not in punctuation])
+    for c in punctuation:
+        s = s.replace(c, "")
+    return s.casefold()
 
 
-checkpoints = [i for i in df.columns if i not in "text,audio,speaker".split(",")]
-candidates = [ 'ȃ', 'ȅ', 'ȋ']
-for c in checkpoints:
-    text = " ".join(df[c].tolist())
-    for i in candidates:
-        if i in text:
-            print(f"Found {i} in {c}, {text.count(i)} times")
+checkpoints = [
+    i for i in df.columns if i not in "text,audio,speaker,normalized_text".split(",")
+]
+
 metrics = dict()
 for checkpoint in checkpoints:
     metric_w = evaluate.load("wer")
@@ -61,19 +63,30 @@ df["epoch"] = df.checkpoint.apply(
 df = df.sort_values("epoch")
 import matplotlib.pyplot as plt
 
+
 colordict = {"Autor": "k", "Geograf": "red", "Mići Princ": "blue", "Dilavac": "green"}
-fig, [ax1, ax2] = plt.subplots(ncols=2)
-ax1.plot(df.epoch, df.wer)
-ax2.plot(df.epoch, df.cer)
+fig, [ax1, ax2] = plt.subplots(ncols=2, figsize=(10, 5))
+ax1.plot(df.epoch, df.wer, label="Average", linewidth=3)
+ax2.plot(df.epoch, df.cer, label="Average", linewidth=3)
 for speaker, color in colordict.items():
-    ax1.scatter(
-        df.epoch, df.per_speaker.apply(lambda d: d[speaker]["wer"]), label=speaker
+    ax1.plot(
+        df.epoch,
+        df.per_speaker.apply(lambda d: d[speaker]["wer"]),
+        label=speaker,
+        linestyle="--",
+        marker="o",
     )
-    ax2.scatter(
-        df.epoch, df.per_speaker.apply(lambda d: d[speaker]["cer"]), label=speaker
+    ax2.plot(
+        df.epoch,
+        df.per_speaker.apply(lambda d: d[speaker]["cer"]),
+        label=speaker,
+        linestyle="--",
+        marker="o",
     )
 ax1.set_title("Wer")
 ax2.set_title("Cer")
+ax1.set_xticks([i for i in range(11)])
+ax2.set_xticks([i for i in range(11)])
 ax1.legend()
 ax2.legend()
 fig.tight_layout()

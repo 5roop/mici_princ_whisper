@@ -4,15 +4,64 @@ from datasets import load_dataset, DatasetDict, Dataset
 import pandas as pd
 from pathlib import Path
 
+
+to_remove = [
+    # "!",
+    # ",",
+    # ".",
+    # ":",
+    # "?",
+    "–",
+    "“",
+    "„",
+    "•",
+    # "…",
+]
+to_substitute = {
+    "\n": " ",
+    "ȅ": "e",
+    "é": "e",
+    "ȋ": "i",
+    "ȉ": "i",
+    "ȃ": "a",
+    "ȁ": "a",
+    "î": "i",
+}
+
+
+def normalize(s: str) -> str:
+    for c in to_remove:
+        s = s.replace(c, "")
+    for c, c_ in to_substitute.items():
+        s = s.replace(c, c_)
+        s = s.replace(c.upper(), c_.upper())
+    s = s.replace("  ", " ")
+    return s
+
+
+jsons = list(Path("data").glob("**/*.asr.json"))
+
+for j in jsons:
+    import json
+
+    data = json.loads(j.read_text())
+    new_data = [
+        {**entry, "normalized_text": normalize(entry["text"])} for entry in data
+    ]
+    Path(j).write_text(json.dumps(new_data, ensure_ascii=False, indent=4))
+
+
 test_path = Path("data/test")
 test_jsons = test_path.glob("*.asr.json")
 test_df = pd.concat([pd.read_json(i) for i in test_jsons])
 test_df["audio"] = test_df.audio.apply(lambda s: str(test_path / s))
+test_df["text"] = test_df.normalized_text
 
 train_path = Path("data/train")
 train_jsons = train_path.glob("*.asr.json")
 train_df = pd.concat([pd.read_json(i) for i in train_jsons])
 train_df["audio"] = train_df.audio.apply(lambda s: str(train_path / s))
+train_df["text"] = train_df.normalized_text
 
 assert train_df.audio.apply(lambda s: Path(s).exists()).all()
 assert test_df.audio.apply(lambda s: Path(s).exists()).all()
@@ -150,11 +199,12 @@ from transformers import Seq2SeqTrainingArguments
 
 training_args = Seq2SeqTrainingArguments(
     output_dir="./output",  # change to a repo name of your choice
+    overwrite_output_dir=True,
     per_device_train_batch_size=4,
     gradient_accumulation_steps=4,  # increase by 2x for every 2x decrease in batch size
     learning_rate=1e-5,
     warmup_steps=100,
-    max_steps=3090,
+    max_steps=309 * 10,
     gradient_checkpointing=True,
     fp16=True,
     evaluation_strategy="steps",
@@ -184,3 +234,13 @@ trainer = Seq2SeqTrainer(
 )
 
 trainer.train()
+
+kwargs = {
+    "dataset": "Mići Princ",  # a 'pretty' name for the training dataset
+    "language": "hr",
+    "model_name": "Whisper Mići Princ",  # a 'pretty' name for your model
+    "finetuned_from": "openai/whisper-large-v3",
+    "tasks": "automatic-speech-recognition",
+}
+
+trainer.push_to_hub(**kwargs)
