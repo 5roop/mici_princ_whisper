@@ -66,8 +66,8 @@ import matplotlib.pyplot as plt
 
 colordict = {"Autor": "k", "Geograf": "red", "Mići Princ": "blue", "Dilavac": "green"}
 fig, [ax1, ax2] = plt.subplots(ncols=2, figsize=(10, 5))
-ax1.plot(df.epoch, df.wer, label="Average", linewidth=3)
-ax2.plot(df.epoch, df.cer, label="Average", linewidth=3)
+ax1.plot(df.epoch, df.wer, label="Overall", linewidth=3, zorder=10)
+ax2.plot(df.epoch, df.cer, label="Overall", linewidth=3, zorder=10)
 for speaker, color in colordict.items():
     ax1.plot(
         df.epoch,
@@ -83,13 +83,19 @@ for speaker, color in colordict.items():
         linestyle="--",
         marker="o",
     )
-ax1.set_title("Wer")
-ax2.set_title("Cer")
+ax1.set_title("WER")
+ax2.set_title("CER")
 ax1.set_xticks([i for i in range(11)])
 ax2.set_xticks([i for i in range(11)])
+
+ax1.set_xlabel("Epoch")
+ax2.set_xlabel("Epoch")
+ax1.set_ylim((0, None))
+ax2.set_ylim((0, None))
 ax1.legend()
 ax2.legend()
 fig.tight_layout()
 
 plt.savefig("metrics.png")
+plt.savefig("metrics.pdf")
 print("")
