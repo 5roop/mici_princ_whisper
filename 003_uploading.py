@@ -25,7 +25,7 @@ except:
         use_safetensors=False,
     )
 
-model.push_to_hub("5roop/whisper-large-v3-mici-princ")
+model.push_to_hub("classla/whisper-large-v3-mici-princ")
 
 
 from transformers import WhisperFeatureExtractor

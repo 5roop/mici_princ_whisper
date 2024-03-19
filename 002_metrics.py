@@ -58,7 +58,7 @@ import pandas as pd
 df = pd.DataFrame(metrics).T
 df["checkpoint"] = df.index
 df["epoch"] = df.checkpoint.apply(
-    lambda s: 0 if "openai" in s else int(s.split("-")[-1]) / 309
+    lambda s: 0 if "openai" in s else int(s.split("-")[-1]) / 277
 )
 df = df.sort_values("epoch")
 import matplotlib.pyplot as plt

@@ -204,15 +204,15 @@ training_args = Seq2SeqTrainingArguments(
     gradient_accumulation_steps=4,  # increase by 2x for every 2x decrease in batch size
     learning_rate=1e-5,
     warmup_steps=100,
-    max_steps=309 * 10,
+    max_steps=277 * 10,
     gradient_checkpointing=True,
     fp16=True,
     evaluation_strategy="steps",
     per_device_eval_batch_size=8,
     predict_with_generate=True,
     generation_max_length=225,
-    save_steps=309,
-    eval_steps=309,
+    save_steps=277,
+    eval_steps=277,
     logging_steps=25,
     report_to=["tensorboard"],
     load_best_model_at_end=False,
@@ -234,13 +234,3 @@ trainer = Seq2SeqTrainer(
 )
 
 trainer.train()
-
-kwargs = {
-    "dataset": "Mići Princ",  # a 'pretty' name for the training dataset
-    "language": "hr",
-    "model_name": "Whisper Mići Princ",  # a 'pretty' name for your model
-    "finetuned_from": "openai/whisper-large-v3",
-    "tasks": "automatic-speech-recognition",
-}
-
-trainer.push_to_hub(**kwargs)

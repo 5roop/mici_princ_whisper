@@ -16,3 +16,8 @@ srun: Check SLURM_JOB_ID environment variable. Expired or invalid job 911
 ~Maybe it's due to the network problems JSI has been experiencing today.~
 
 Barbara fixed the problem after an email report.
+
+
+# 2024-03-19T08:52:39
+
+The second epoch was chosen as the optimal. In this case
