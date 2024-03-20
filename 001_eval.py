@@ -64,7 +64,15 @@ def get_transcripts(model_id):
 
 from tqdm import tqdm
 
-for checkpoint in tqdm(checkpoints):
+
+def key(c):
+    if "openai" in str(c):
+        return 0
+    else:
+        return int(str(c).split("-")[-1])
+
+
+for checkpoint in tqdm(sorted(checkpoints, key=key)):
     print(f"Evaluating {checkpoint}...")
     transcription = get_transcripts(checkpoint)
     test_df[str(checkpoint).replace("/", "_")] = transcription

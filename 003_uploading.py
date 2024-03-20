@@ -8,7 +8,7 @@ from transformers import (
 )
 from pathlib import Path
 
-model_id = "output/checkpoint-618"
+model_id = "output/checkpoint-87"
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 try:
     model = WhisperForConditionalGeneration.from_pretrained(

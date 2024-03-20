@@ -1,5 +1,4 @@
 import pandas as pd
-import evaluate
 import difflib
 
 df = pd.read_csv("transcriptions.csv")
@@ -16,7 +15,7 @@ def normalize(s: str) -> str:
 
 
 checkpoints = [i for i in df.columns if i not in "text,audio,speaker".split(",")]
-from colorama import Fore, Back, Style
+# from colorama import Fore, Back, Style
 
 for checkpoint in checkpoints:
     if not checkpoint == "output_checkpoint-897":
@@ -25,6 +24,8 @@ for checkpoint in checkpoints:
     predicted = df[checkpoint]
     speakers = df.speaker
     for o, p, s in zip(original, predicted, speakers):
+        if "Mići" not in s:
+            continue
         diff = d.compare(normalize(o).split(), normalize(p).split())
         output = "\n".join(diff)
         if "+" in output or "-" in output:

@@ -21,11 +21,15 @@ checkpoints = [
 ]
 
 metrics = dict()
+
+
 def key(c):
     if "openai" in c:
         return 0
     else:
         return int(c.split("-")[-1])
+
+
 for checkpoint in sorted(checkpoints, key=key):
     metric_w = evaluate.load("wer")
     wer = metric_w.compute(
@@ -96,7 +100,7 @@ ax2.set_title("CER")
 ax1.set_xlabel("Epoch")
 ax2.set_xlabel("Epoch")
 ax1.set_ylim((0, None))
-ax2.set_ylim((0, 0.3))
+ax2.set_ylim((0, None))
 ax1.legend()
 ax2.legend()
 fig.tight_layout()
