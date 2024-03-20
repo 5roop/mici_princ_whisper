@@ -196,24 +196,25 @@ model.generation_config.language = "croatian"
 
 
 from transformers import Seq2SeqTrainingArguments
-
+BATCHSIZE = 4
+ACCUMULATION = 4
 training_args = Seq2SeqTrainingArguments(
     output_dir="./output",  # change to a repo name of your choice
     overwrite_output_dir=True,
-    per_device_train_batch_size=4,
-    gradient_accumulation_steps=4,  # increase by 2x for every 2x decrease in batch size
+    per_device_train_batch_size=BATCHSIZE,
+    gradient_accumulation_steps=ACCUMULATION,
     learning_rate=1e-5,
     warmup_steps=100,
-    max_steps=277 * 10,
+    max_steps=int(120 * 277 / (BATCHSIZE * ACCUMULATION)),
     gradient_checkpointing=True,
     fp16=True,
     evaluation_strategy="steps",
     per_device_eval_batch_size=8,
     predict_with_generate=True,
     generation_max_length=225,
-    save_steps=277,
-    eval_steps=277,
-    logging_steps=25,
+    save_steps=int(4 * 277 / (BATCHSIZE * ACCUMULATION) ),
+    eval_steps=int(4 * 277 / (BATCHSIZE * ACCUMULATION) ),
+    logging_steps=17,
     report_to=["tensorboard"],
     load_best_model_at_end=False,
     metric_for_best_model="wer",

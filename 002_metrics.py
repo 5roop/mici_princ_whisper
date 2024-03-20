@@ -6,7 +6,7 @@ print(df.shape)
 df["text"] = df.normalized_text
 del df["normalized_text"]
 
-print(sorted(set(" ".join(df.text.tolist()))))
+# print(sorted(set(" ".join(df.text.tolist()))))
 punctuation = ["!", ",", ".", ":", "?", "–", "“", "„", "•", "…"]
 
 
@@ -21,7 +21,12 @@ checkpoints = [
 ]
 
 metrics = dict()
-for checkpoint in checkpoints:
+def key(c):
+    if "openai" in c:
+        return 0
+    else:
+        return int(c.split("-")[-1])
+for checkpoint in sorted(checkpoints, key=key):
     metric_w = evaluate.load("wer")
     wer = metric_w.compute(
         predictions=df[checkpoint].apply(normalize).tolist(),
@@ -58,7 +63,7 @@ import pandas as pd
 df = pd.DataFrame(metrics).T
 df["checkpoint"] = df.index
 df["epoch"] = df.checkpoint.apply(
-    lambda s: 0 if "openai" in s else int(s.split("-")[-1]) / 277
+    lambda s: 0 if "openai" in s else int(s.split("-")[-1]) / (277 / 16)
 )
 df = df.sort_values("epoch")
 import matplotlib.pyplot as plt
@@ -85,13 +90,13 @@ for speaker, color in colordict.items():
     )
 ax1.set_title("WER")
 ax2.set_title("CER")
-ax1.set_xticks([i for i in range(11)])
-ax2.set_xticks([i for i in range(11)])
+# ax1.set_xticks([i for i in range(11)])
+# ax2.set_xticks([i for i in range(11)])
 
 ax1.set_xlabel("Epoch")
 ax2.set_xlabel("Epoch")
 ax1.set_ylim((0, None))
-ax2.set_ylim((0, None))
+ax2.set_ylim((0, 0.3))
 ax1.legend()
 ax2.legend()
 fig.tight_layout()

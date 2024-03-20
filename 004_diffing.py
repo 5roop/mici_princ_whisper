@@ -19,6 +19,8 @@ checkpoints = [i for i in df.columns if i not in "text,audio,speaker".split(",")
 from colorama import Fore, Back, Style
 
 for checkpoint in checkpoints:
+    if not checkpoint == "output_checkpoint-897":
+        continue
     original = df.text
     predicted = df[checkpoint]
     speakers = df.speaker
