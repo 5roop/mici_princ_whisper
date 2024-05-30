@@ -145,6 +145,44 @@ ax4.legend()
 # ax4.set_yscale("log")
 fig.tight_layout()
 
+plt.savefig("metrics_4.png")
+plt.savefig("metrics_4.pdf")
+print("")
+
+
+colordict = {"Autor": "k", "Geograf": "red", "Mići Princ": "blue", "Dilavac": "green"}
+fig, [ax1, ax2] = plt.subplots(ncols=2, figsize=(8, 4))
+ax1.plot(df.epoch, df.wer, label="Overall", linewidth=3, zorder=2)
+ax2.plot(df.epoch, df.cer, label="Overall", linewidth=3, zorder=2)
+for speaker, color in colordict.items():
+    ax1.plot(
+        df.epoch,
+        df.per_speaker.apply(lambda d: d[speaker]["wer"]),
+        label=speaker,
+        linestyle="--",
+        marker="o",
+    )
+    ax2.plot(
+        df.epoch,
+        df.per_speaker.apply(lambda d: d[speaker]["cer"]),
+        label=speaker,
+        linestyle="--",
+        marker="o",
+    )
+ax1.set_title("WER")
+ax2.set_title("CER")
+# ax1.set_xticks([i for i in range(11)])
+# ax2.set_xticks([i for i in range(11)])
+
+ax1.set_xlabel("Epoch")
+ax2.set_xlabel("Epoch")
+ax1.set_ylim((0, 0.5))
+ax2.set_ylim((0, 0.5))
+ax1.legend()
+ax2.legend()
+# ax3.set_yscale("log")
+# ax4.set_yscale("log")
+fig.tight_layout()
+
 plt.savefig("metrics.png")
 plt.savefig("metrics.pdf")
-print("")

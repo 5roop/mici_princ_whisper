@@ -15,47 +15,35 @@ def normalize(s: str) -> str:
 
 
 checkpoints = [i for i in df.columns if i not in "text,audio,speaker".split(",")]
-# from colorama import Fore, Back, Style
+from colorama import Fore, Back, Style
 
 for checkpoint in checkpoints:
-    if not checkpoint == "output_checkpoint-1104":
+    if not checkpoint == "output_checkpoint-1380":
         continue
     original = df.text
     predicted = df[checkpoint]
     speakers = df.speaker
     for o, p, s in zip(original, predicted, speakers):
-        # if "Mići" not in s:
+        # if "Dilavac" not in s:
         #     continue
         diff = d.compare(normalize(o).split(), normalize(p).split())
         output = "\n".join(diff)
         if "+" in output or "-" in output:
             print(
-                # Style.BRIGHT
-                # + Fore.RED +
-                f"**** Evaluating checkpoint {checkpoint} ****"
-                # + Fore.RESET
+                Style.BRIGHT
+                + Fore.RED
+                + f"**** Evaluating checkpoint {checkpoint} ****"
+                + Fore.RESET
             )
+            print(Fore.RED + f"Speaker: {s}" + Fore.RESET)
+            print(Fore.RED + f"Original sentence: \n{o}" + Fore.RESET)
+            print(Fore.RED + f"Predicted sentence:\n{p}" + Fore.RESET)
             print(
-                # Fore.RED +
-                f"Speaker: {s}"
-                # + Fore.RESET
-            )
-            print(
-                # Fore.RED +
-                f"Original sentence: \n{o}"
-                # + Fore.RESET
-            )
-            print(
-                # Fore.RED +
-                f"Predicted sentence:\n{p}"
-                # + Fore.RESET
-            )
-            print(
-                # Fore.RED +
-                "Diff other than punctuation differences:"
-                # + Fore.RESET
-                # + Back.RESET
-                # + Style.RESET_ALL
+                Fore.RED
+                + "Diff other than punctuation differences:"
+                + Fore.RESET
+                + Back.RESET
+                + Style.RESET_ALL
             )
             print(output, end="\n\n\n")
             2 + 2
